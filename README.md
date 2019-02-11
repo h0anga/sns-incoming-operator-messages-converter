@@ -1,9 +1,8 @@
-# xml-2-json-converter
+# sns incoming operator messages converter
 
 TODO:
- - incoming operator messages converter (repository, project)
- - public repository
- - rename topics (this, enricher)
+ - rename topics (enricher)
  - update enricher and knitware converter for netstreamCorrelationId as ORDER_ID 
  - kafka setup test
  - system end-to-end test
+ - add proper readme
