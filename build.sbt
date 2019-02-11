@@ -1,5 +1,4 @@
-
-name := "xml2json-converter"
+name := "sns-incoming-operator-messages-converter"
 
 version := "0.1"
 

@@ -7,7 +7,7 @@ object Xml2JsonConverterApp extends App {
   private val kafkabrokerPort: String = Properties.envOrElse("KAFKA_BROKER_PORT", "9092")
 
   private val lluStreamMessagesTopic = "incoming.op.msgs"
-  private val lluStreamMessagesConvertedToJsonTopic = "incoming.op.msgs.converted.to.json"
+  private val lluStreamMessagesConvertedToJsonTopic = "modify.op.msgs"
 
   val kafkaSetup = new KafkaSetup(kafkabroker, kafkabrokerPort)
   kafkaSetup.start(lluStreamMessagesTopic, lluStreamMessagesConvertedToJsonTopic)
