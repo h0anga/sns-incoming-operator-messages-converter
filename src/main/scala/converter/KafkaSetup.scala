@@ -9,7 +9,6 @@ import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig, Topology}
 
 
-
 class KafkaSetup(private val server: String, private val port: String) {
 
   private implicit val stringSerde: Serde[String] = Serdes.String()
