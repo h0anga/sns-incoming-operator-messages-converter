@@ -1,6 +1,6 @@
 name := "sns-incoming-operator-messages-converter"
 
-version := "0.1"
+version := "0.1.1"
 
 scalaVersion := "2.12.8"
 
@@ -16,6 +16,7 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 enablePlugins(AshScriptPlugin)
 
-dockerBaseImage := "openjdk:8-jre-alpine"
+dockerBaseImage := "openjdk:8-jre"
+//dockerBaseImage := "openjdk:8-jre-alpine"
 
-mainClass in Compile := Some("sns.lando.xml2json.converter.Xml2JsonConverterApp")
+mainClass in Compile := Some("converter.Xml2JsonConverterApp")

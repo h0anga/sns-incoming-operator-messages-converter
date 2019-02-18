@@ -21,7 +21,7 @@ class KafkaSetup(private val server: String, private val port: String) {
 
     val streamingConfig = {
       val settings = new Properties
-      settings.put(StreamsConfig.APPLICATION_ID_CONFIG, "xml-to-json-converter")
+      settings.put(StreamsConfig.APPLICATION_ID_CONFIG, "sns-incoming-operator-messages-converter")
       settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
       settings.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
       settings.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)

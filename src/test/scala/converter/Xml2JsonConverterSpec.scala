@@ -1,20 +1,19 @@
-package sns.lando.xml2json.converter
+package converter
 
 import java.util.Properties
 
 import converter.Xml2JsonConverter._
-import converter.{KafkaSetup, FullModifyVoiceFeaturesInstruction}
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.{StreamsConfig, TopologyTestDriver}
 import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler
 import org.apache.kafka.streams.test.ConsumerRecordFactory
+import org.apache.kafka.streams.{StreamsConfig, TopologyTestDriver}
 import org.scalatest._
 
 class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
 
-  private val kafkaApplicationId = "sns-incoming-operator-messages-convertor"
+  private val kafkaApplicationId = "sns-incoming-operator-messages-converter"
   private val serverName = "serverName"
   private val portNumber = "portNumber"
 
