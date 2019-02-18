@@ -1,3 +1,3 @@
 package converter
 
-case class ModifyVoiceFeaturesInstruction(orderId: String)
+case class ModifyVoiceFeaturesInstruction(operatorId: String, orderId: String, serviceId: String, operatorOrderId: String, features: Seq[String])

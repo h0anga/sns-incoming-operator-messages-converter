@@ -39,7 +39,7 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
   val features = Seq("CallerDisplay","RingBack","ChooseToRefuse")
 
   it should "create instruction with operatorId, orderId, serviceId, operatorOrderId, features" in {
-    val instruction = FullModifyVoiceFeaturesInstruction(operatorId, orderId, serviceId, operatorOrderId, features)
+    val instruction = ModifyVoiceFeaturesInstruction(operatorId, orderId, serviceId, operatorOrderId, features)
 
     instruction.operatorId should be (operatorId)
     instruction.orderId should be (orderId)
@@ -48,8 +48,8 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
     instruction.features should contain theSameElementsAs features
   }
 
-  it should "map xml to full modify instruction case class" in {
-    val instruction  = fromXmlToFullInstruction(expectedXml)
+  it should "map xml to modify instruction case class" in {
+    val instruction  = fromXml(expectedXml)
 
     instruction.operatorId should be (operatorId)
     instruction.orderId should be (orderId)
@@ -58,14 +58,9 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
     instruction.features should contain theSameElementsAs  features
   }
 
-  it should "map xml to modify instruction case class" in {
-    val instruction  = fromXml(expectedXml)
-    instruction.orderId should be (orderId)
-  }
-
   it should "convert xml to json" in {
     val instruction  = fromXml(expectedXml)
-    toJson(instruction) should be (expectedSimplifiedJson)
+    toJson(instruction) should be (expectedJson)
   }
 
 
@@ -92,13 +87,10 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
     outputValue shouldEqual expectedOutput
   }
 
-  private val expectedSimplifiedJson =
-    """{"orderId":"33269793"}"""
-
   private val expectedJson =
     """{"modifyVoiceFeaturesInstruction":{"operatorId":"sky","orderId":"33269793","serviceId":"31642339","operatorOrderId":"SogeaVoipModify_YHUORO","features":["CallerDisplay","RingBack","ChooseToRefuse"]}}"""
 
-  private val expectedOutput = expectedSimplifiedJson
+  private val expectedOutput = expectedJson
   private val expectedXml =
     """
       |<transaction receivedDate="2018-11-15T10:29:07" operatorId="sky" operatorTransactionId="op_trans_id_095025_228" operatorIssuedDate="2011-06-01T09:51:12">
