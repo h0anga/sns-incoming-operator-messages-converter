@@ -15,6 +15,10 @@ class KafkaSetup(private val server: String, private val port: String) {
 
   private var stream: KafkaStreams = _
 
+  val xmlPredicate: Predicate[_ >: String, _ >: String] = (_: String, value: String) => {
+    value.startsWith("""<?xml version="1.0" encoding="UTF-8"?>""")
+  }
+
   def start(inputTopicName: String, outputTopicName: String) = {
 
     val bootstrapServers = server + ":" + port
@@ -45,12 +49,11 @@ class KafkaSetup(private val server: String, private val port: String) {
     }
 
     val inputStream: KStream[String, String] = builder.stream(inputTopicName, Consumed.`with`(stringSerde, stringSerde))
+    val xmlStream: KStream[String, String] = inputStream.filter(xmlPredicate)
+    val jsonStream: KStream[String, String] = xmlStream.mapValues(line => toJson(fromXml(line)))
+    val validJsonStream: KStream[String, String] = jsonStream.filterNot(emptyStringPredicate)
 
-    val jsonValues: KStream[String, String] = inputStream.mapValues(line => toJson(fromXml(line)))
-
-    val goodJsonValues: KStream[String, String] = jsonValues.filterNot(emptyStringPredicate)
-
-    goodJsonValues.to(outputTopicName)
+    validJsonStream.to(outputTopicName)
 
     builder.build
   }
