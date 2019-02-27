@@ -19,7 +19,7 @@ class KafkaSetup(private val server: String, private val port: String) {
     value.startsWith("""<?xml version="1.0" encoding="UTF-8"?>""")
   }
 
-  def start(inputTopicName: String, outputTopicName: String) = {
+  def start(inputTopicName: String, outputTopicNames: String*) = {
 
     val bootstrapServers = server + ":" + port
 
@@ -32,7 +32,7 @@ class KafkaSetup(private val server: String, private val port: String) {
       settings.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, classOf[LogAndContinueExceptionHandler])
       settings
     }
-    val topology = build(inputTopicName, outputTopicName)
+    val topology = build(inputTopicName, outputTopicNames)
     stream = new KafkaStreams(topology, streamingConfig)
     stream.start()
   }
@@ -41,7 +41,7 @@ class KafkaSetup(private val server: String, private val port: String) {
     stream.close()
   }
 
-  def build(inputTopicName: String, outputTopicName: String): Topology = {
+  def build(inputTopicName: String, outputTopicNames: Seq[String]): Topology = {
     val builder = new StreamsBuilder
 
     val emptyStringPredicate: Predicate[_ >: String, _ >: String] = (_: String, value: String) => {
@@ -53,7 +53,7 @@ class KafkaSetup(private val server: String, private val port: String) {
     val jsonStream: KStream[String, String] = xmlStream.mapValues(line => toJson(fromXml(line)))
     val validJsonStream: KStream[String, String] = jsonStream.filterNot(emptyStringPredicate)
 
-    validJsonStream.to(outputTopicName)
+    outputTopicNames.foreach(validJsonStream.to)
 
     builder.build
   }

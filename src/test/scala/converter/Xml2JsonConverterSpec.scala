@@ -18,7 +18,8 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
   private val portNumber = "portNumber"
 
   private val inputTopic = "topic-in"
-  private val outputTopic = "topic-out"
+  private val outputTopic1 = "topic-out-1"
+  private val outputTopic2 = "topic-out-2"
 
   private val kafkaMessageInKey = "key"
   private val streamingConfig = {
@@ -32,11 +33,11 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
   }
 
 
-  val operatorId = "sky"
-  val orderId = "33269793"
-  val serviceId = "31642339"
-  val operatorOrderId = "SogeaVoipModify_YHUORO"
-  val features = Seq("CallerDisplay","RingBack","ChooseToRefuse")
+  private val operatorId = "sky"
+  private val orderId = "33269793"
+  private val serviceId = "31642339"
+  private val operatorOrderId = "SogeaVoipModify_YHUORO"
+  private val features = Seq("CallerDisplay","RingBack","ChooseToRefuse")
 
   it should "create instruction with operatorId, orderId, serviceId, operatorOrderId, features" in {
     val instruction = ModifyVoiceFeaturesInstruction(operatorId, orderId, serviceId, operatorOrderId, features)
@@ -66,11 +67,11 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
 
   private def createTopologyToTest = {
     val kafkaSetup = new KafkaSetup(serverName, portNumber)
-    val topology = kafkaSetup.build(inputTopic, outputTopic)
+    val topology = kafkaSetup.build(inputTopic, Seq(outputTopic1, outputTopic2))
     topology
   }
 
-  it should "test a stream" in {
+  it should "test a stream with 2 output topics" in {
     val topology = createTopologyToTest
     val topologyTestDriver = new TopologyTestDriver(topology, streamingConfig)
 
@@ -81,10 +82,14 @@ class Xml2JsonConverterSpec extends FlatSpec with Matchers with GivenWhenThen {
     val inputKafkaRecord: ConsumerRecord[Array[Byte], Array[Byte]] = consumerRecordFactory.create(inputTopic, kafkaMessageInKey, kafkaMessageInValue)
     topologyTestDriver.pipeInput(inputKafkaRecord)
 
-    val outputKafkaRecord: ProducerRecord[String, String] = topologyTestDriver.readOutput(outputTopic, keySerde.deserializer(), valueSerde.deserializer())
-    val outputValue = outputKafkaRecord.value()
+    val outputKafkaRecord1: ProducerRecord[String, String] = topologyTestDriver.readOutput(outputTopic1, keySerde.deserializer(), valueSerde.deserializer())
+    val outputValue1 = outputKafkaRecord1.value()
 
-    outputValue shouldEqual expectedOutput
+    val outputKafkaRecord2: ProducerRecord[String, String] = topologyTestDriver.readOutput(outputTopic2, keySerde.deserializer(), valueSerde.deserializer())
+    val outputValue2 = outputKafkaRecord2.value()
+
+    outputValue1 shouldEqual expectedOutput
+    outputValue2 shouldEqual expectedOutput
   }
 
   private val expectedJson =
