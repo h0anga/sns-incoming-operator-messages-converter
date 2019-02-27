@@ -5,7 +5,7 @@ import net.liftweb.json.Serialization.write
 
 object Xml2JsonConverter {
   def fromXml(xmlString: String): ModifyVoiceFeaturesInstruction = {
-    val incomingXml = scala.xml.XML.loadString(xmlString)
+    val incomingXml = scala.xml.XML.loadString(xmlString.trim)
     val operatorId = incomingXml.\@("operatorId")
     val orderId = incomingXml.\\("orderId").text
     val operatorOrderId = incomingXml.\\("operatorOrderId").text

@@ -9,7 +9,8 @@ libraryDependencies ++= Seq(
   "net.liftweb" %% "lift-json" % "3.3.0",
   "org.apache.kafka" %% "kafka-streams-scala" % "2.1.0",
   "org.apache.kafka" % "kafka-streams-test-utils" % "2.1.0" % Test,
-  "com.typesafe.scala-logging" %% "scala-logging"  % "3.5.0"
+  "com.typesafe.scala-logging" %% "scala-logging"  % "3.5.0",
+  "org.json4s" %% "json4s-native" % "3.6.3"
 )
 
 enablePlugins(JavaAppPackaging)
