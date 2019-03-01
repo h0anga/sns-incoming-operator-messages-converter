@@ -24,7 +24,7 @@ object Xml2JsonConverter {
   def xmlToJson(instruction: String): String = {
     val xml = scala.xml.XML.loadString(instruction)
     val json = toJson(xml)
-    compact(render(json))
+    pretty(render(json))
     //    s"""{"modifyVoiceFeaturesInstruction":${write(instruction)(DefaultFormats)}}"""
   }
 }
