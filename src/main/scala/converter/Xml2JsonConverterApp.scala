@@ -8,10 +8,9 @@ object Xml2JsonConverterApp extends App {
 
   private val incomingOperatorMessagesTopic = "incoming.op.msgs"
   private val modifyOperatorMessagesTopic = "modify.op.msgs"
-  private val orderEventsTopic = "order.events"
 
   val kafkaSetup = new KafkaSetup(kafkabroker, kafkabrokerPort)
-  kafkaSetup.start(incomingOperatorMessagesTopic, modifyOperatorMessagesTopic, orderEventsTopic)
+  kafkaSetup.start(incomingOperatorMessagesTopic, modifyOperatorMessagesTopic)
 
   sys.ShutdownHookThread {
     kafkaSetup.shutDown()
