@@ -5,6 +5,9 @@ TODO:
  - add proper readme
  
  This application *can* be run standalone, but is intended to be used as a Docker image from within Kubernetes.
+
+Standalone - specifying the app-name, input and output topics:
+sbt "run --app-name knitware-error-mxl-json-converter --input-topic KNITWARE_ERRORS_XML --output-topic KNITWARE_ERRORS"
  
  ##Local
  

@@ -28,12 +28,13 @@ class KafkaSetup(private val server: String, private val port: String) {
 
   private val tracing = setupTracing
 
-  def start(inputTopicName: String, outputTopicName: String) = {
-
+  def start(appName: String, inputTopicName: String, outputTopicName: String) = {
+    println(s"Input topic: $inputTopicName")
+    println(s"Outut topic: $outputTopicName")
 
     val streamingConfig = {
       val settings = new Properties
-      settings.put(StreamsConfig.APPLICATION_ID_CONFIG, "sns-incoming-operator-messages-converter")
+      settings.put(StreamsConfig.APPLICATION_ID_CONFIG, appName)
       settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
       settings.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
       settings.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
@@ -64,7 +65,6 @@ class KafkaSetup(private val server: String, private val port: String) {
     }
 
     val inputStream: KStream[String, String] = builder.stream(inputTopicName, Consumed.`with`(stringSerde, stringSerde))
-
     val xmlStream: KStream[String, String] = inputStream.filter(xmlPredicate)
     val jsonStream: KStream[String, String] = xmlStream.mapValues(line => xmlToJson(line))
     jsonStream.filterNot(emptyStringPredicate)
