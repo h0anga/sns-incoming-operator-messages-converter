@@ -8,7 +8,7 @@ import brave.sampler.Sampler
 import converter.Xml2JsonConverter.xmlToJson
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler
-import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate}
+import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate, ValueMapper}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig, Topology}
 import zipkin2.reporter.AsyncReporter
 import zipkin2.reporter.kafka11.KafkaSender
@@ -64,9 +64,14 @@ class KafkaSetup(private val server: String, private val port: String) {
       value.isEmpty
     }
 
+    val xmlToJsonMapper: ValueMapper[String,String] = xmlToJson(_)
+
     val inputStream: KStream[String, String] = builder.stream(inputTopicName, Consumed.`with`(stringSerde, stringSerde))
-    val xmlStream: KStream[String, String] = inputStream.filter(xmlPredicate)
-    val jsonStream: KStream[String, String] = xmlStream.mapValues(line => xmlToJson(line))
+    val jsonStream: KStream[String, String] = inputStream.filter(xmlPredicate)
+      .transformValues(tracing.mapValues("xml_to_json", xmlToJsonMapper))
+
+//    val xmlStream: KStream[String, String] = inputStream.filter(xmlPredicate)
+//    val jsonStream: KStream[String, String] = xmlStream.mapValues(line => xmlToJson(line))
     jsonStream.filterNot(emptyStringPredicate)
       .to(outputTopicName)
 

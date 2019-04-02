@@ -1,9 +1,9 @@
 package converter
 
-import net.liftweb.json._
-import net.liftweb.json.Serialization.write
+import brave.Tracing
 import org.json4s
-import org.json4s.Xml.{toJson, toXml}
+import org.json4s.JsonAST.{JObject, JString}
+import org.json4s.Xml.toJson
 import org.json4s.native.JsonMethods._
 
 import scala.xml.Elem
@@ -14,8 +14,13 @@ object Xml2JsonConverter {
   }
 
   def xmlToJson(instruction: String): String = {
+    val span = Tracing.currentTracer().currentSpan()
+    val traceId = span.context().traceIdString()
+    println(s"TraceId: $traceId")
+
     val xml = scala.xml.XML.loadString(instruction)
-    val json = toJson(xml)
-    pretty(render(json))
+    val json: json4s.JValue = toJson(xml)
+    val tracedJson = json merge JObject("traceId" -> JString(traceId))
+    pretty(render(tracedJson))
   }
 }
