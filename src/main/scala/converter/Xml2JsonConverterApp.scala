@@ -21,7 +21,7 @@ object Xml2JsonConverterApp extends App {
   }
 
   private def getInputTopicName = {
-    var INPUT_KAFKA_TOPIC = "incoming.op.msgs"
+    var INPUT_KAFKA_TOPIC = "INCOMING_OP_MSGS"
     args.sliding(2, 2).toList.collect {
       case Array("--input-topic", argIT: String) => INPUT_KAFKA_TOPIC = argIT
     }

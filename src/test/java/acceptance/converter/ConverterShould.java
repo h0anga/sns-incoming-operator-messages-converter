@@ -39,7 +39,7 @@ public class ConverterShould {
     private static final String ENV_KEY_KAFKA_BROKER_SERVER = "KAFKA_BROKER_SERVER";
     private static final String ENV_KEY_KAFKA_BROKER_PORT = "KAFKA_BROKER_PORT";
 
-    private static final String XML_TOPIC = "incoming.op.msgs";
+    private static final String XML_TOPIC = "INCOMING_OP_MSGS";
     private static final String JSON_TOPIC = "modify.op.msgs";
 
     @Container
