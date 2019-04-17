@@ -38,6 +38,8 @@ object Xml2JsonConverterApp extends App {
     OUTPUT_KAFKA_TOPIC
   }
 
+  println(s"SERVER: $kafkabroker")
+  println(s"PORT: $kafkabrokerPort")
   println(s"IN: $incomingOperatorMessagesTopic")
   println(s"OUT: $modifyOperatorMessagesTopic")
 

@@ -51,3 +51,7 @@ sbt "run --app-name knitware-error-mxl-json-converter --input-topic KNITWARE_ERR
  
  To stop all pods and remove a namespace:
  kubectl delete ns kafka
+ 
+ 
+ Read logs of container when its spun up during test:
+ docker ps | grep "sns-incoming-operator-messages-converter" | awk {'print $1'} | xargs docker logs
