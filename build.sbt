@@ -5,6 +5,7 @@ version := "0.1.1"
 scalaVersion := "2.12.8"
 
 resolvers += "mvnrepository" at "http://central.maven.org/maven2/"
+resolvers += "Maven Repository" at "https://mvnrepository.com/artifact/"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % "test",
@@ -18,6 +19,10 @@ libraryDependencies ++= Seq(
   "io.zipkin.brave" % "brave-instrumentation-kafka-streams" % "5.6.3",
   "io.zipkin.reporter2" % "zipkin-sender-kafka11" % "2.8.1"
 )
+libraryDependencies += "com.dimafeng" %% "testcontainers-scala" % "0.24.0" % "test"
+libraryDependencies += "org.testcontainers" % "kafka" % "1.11.1" % Test
+libraryDependencies += "org.testcontainers" % "junit-jupiter" % "1.11.1" % Test
+libraryDependencies += "net.javacrumbs.json-unit" % "json-unit" % "2.6.1" % Test
 
 enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
