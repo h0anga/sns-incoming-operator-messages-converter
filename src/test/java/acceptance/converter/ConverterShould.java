@@ -1,4 +1,4 @@
-package converter;
+package acceptance.converter;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsOptions;
