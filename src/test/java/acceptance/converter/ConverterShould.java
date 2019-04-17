@@ -85,13 +85,13 @@ public class ConverterShould {
         writeXmlToInputTopic();
 
         //then
+        assertKafkaMessageEquals();
+    }
+
+    private void assertKafkaMessageEquals() {
         ConsumerRecords<String, String> recs = pollForResults();
         assertFalse(recs.isEmpty());
 
-        assertKafkaMessageEquals(recs);
-    }
-
-    private void assertKafkaMessageEquals(ConsumerRecords<String, String> recs) {
         Spliterator<ConsumerRecord<String, String>> spliterator = Spliterators.spliteratorUnknownSize(recs.iterator(), 0);
         Stream<ConsumerRecord<String, String>> consumerRecordStream = StreamSupport.stream(spliterator, false);
         Optional<ConsumerRecord<String, String>> expectedConsumerRecord = consumerRecordStream.filter(cr -> foundExpectedRecord(cr.key()))
