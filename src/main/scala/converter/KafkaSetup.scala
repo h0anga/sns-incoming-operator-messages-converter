@@ -25,7 +25,9 @@ class KafkaSetup(private val server: String, private val port: String) {
   private val bootstrapServers = server + ":" + port
 
   private val xmlPredicate: Predicate[_ >: String, _ >: String] = (_: String, value: String) => {
-    value.startsWith("""<?xml version="1.0" encoding="UTF-8"?>""")
+    println(s"""Value: $value""")
+//    value.startsWith("""<?xml version="1.0" encoding="UTF-8"?>""")
+    true
   }
 
   private val tracing = setupTracing
@@ -65,14 +67,15 @@ class KafkaSetup(private val server: String, private val port: String) {
   def build(inputTopicName: String, outputTopicName: String): Topology = {
     val builder = new StreamsBuilder
     val emptyStringPredicate: Predicate[_ >: String, _ >: String] = (_: String, value: String) => {
+      println(s"""json to output: $value""")
       value.isEmpty
     }
 
     val xmlToJsonMapper: ValueMapper[String,String] = xmlToJson(_)
 
     val inputStream: KStream[String, String] = builder.stream(inputTopicName, Consumed.`with`(stringSerde, stringSerde))
-    val jsonStream: KStream[String, String] = inputStream.filter(xmlPredicate)
-      .transformValues(tracing.mapValues("xml_to_json", xmlToJsonMapper))
+    val jsonStream: KStream[String, String] = //inputStream.filter(xmlPredicate)
+      inputStream.transformValues(tracing.mapValues("xml_to_json", xmlToJsonMapper))
 
 //    val xmlStream: KStream[String, String] = inputStream.filter(xmlPredicate)
 //    val jsonStream: KStream[String, String] = xmlStream.mapValues(line => xmlToJson(line))

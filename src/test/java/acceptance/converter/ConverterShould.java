@@ -55,11 +55,11 @@ public class ConverterShould {
 
     private String randomValue = generateRandomString();
     private String orderId = generateRandomString();
+    private String traceyId = generateRandomString();
 
     private Map<String, String> calculateEnvProperties() {
         Map<String, String> envProperties = new HashMap<>();
-        String bootstrapServers = KAFKA_CONTAINER.getNetworkAliases().get(0);
-        envProperties.put(ENV_KEY_KAFKA_BROKER_SERVER, bootstrapServers);
+        envProperties.put(ENV_KEY_KAFKA_BROKER_SERVER, KAFKA_CONTAINER.getNetworkAliases().get(0));
         envProperties.put(ENV_KEY_KAFKA_BROKER_PORT, "" + 9092);
         return envProperties;
     }
@@ -88,14 +88,32 @@ public class ConverterShould {
         assertKafkaMessageEquals();
     }
 
+    private void writeXmlToInputTopic() throws InterruptedException, ExecutionException {
+        new KafkaProducer<String, String>(getProperties()).send(createKafkaProducerRecord()).get();
+    }
+
+    private ProducerRecord createKafkaProducerRecord() {
+        return new ProducerRecord(XML_TOPIC, orderId, createJsonMessage());
+    }
+
+    private String createJsonMessage() {
+        return String.format("{"
+                + "\"ORDER_ID\":\"%s\","
+                + "\"TRACEY_ID\":\"%s\","
+                + "\"XML\":\"%s\""
+                + "}", orderId, traceyId, createXmlMessage());
+    }
+
     private void assertKafkaMessageEquals() {
         ConsumerRecords<String, String> recs = pollForResults();
         assertFalse(recs.isEmpty());
 
-        Spliterator<ConsumerRecord<String, String>> spliterator = Spliterators.spliteratorUnknownSize(recs.iterator(), 0);
+        Spliterator<ConsumerRecord<String, String>> spliterator = Spliterators.spliteratorUnknownSize(recs.iterator()
+                , 0);
         Stream<ConsumerRecord<String, String>> consumerRecordStream = StreamSupport.stream(spliterator, false);
-        Optional<ConsumerRecord<String, String>> expectedConsumerRecord = consumerRecordStream.filter(cr -> foundExpectedRecord(cr.key()))
-                                                                           .findAny();
+        Optional<ConsumerRecord<String, String>> expectedConsumerRecord =
+                consumerRecordStream.filter(cr -> foundExpectedRecord(cr.key()))
+                .findAny();
         expectedConsumerRecord.ifPresent(cr -> assertRecordValueJson(cr));
         if (!expectedConsumerRecord.isPresent())
             fail("Did not find expected record");
@@ -116,18 +134,9 @@ public class ConverterShould {
         return String.valueOf(new Random().nextLong());
     }
 
-    private void writeXmlToInputTopic() throws InterruptedException, ExecutionException {
-        new KafkaProducer<String, String>(getProperties()).send(createKafkaProducerRecord(orderId)).get();
-    }
-
-    @NotNull
-    private ProducerRecord createKafkaProducerRecord(String orderId) {
-        return new ProducerRecord(XML_TOPIC, orderId, createMessage(orderId));
-    }
-
     private ConsumerRecords<String, String> pollForResults() {
         KafkaConsumer<String, String> consumer = createKafkaConsumer(getProperties());
-        Duration duration = Duration.ofSeconds(2);
+        Duration duration = Duration.ofSeconds(3);
         return consumer.poll(duration);
     }
 
@@ -135,24 +144,15 @@ public class ConverterShould {
     private KafkaConsumer<String, String> createKafkaConsumer(Properties props) {
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(JSON_TOPIC));
-        Duration immediately = Duration.ofSeconds(0);
-        consumer.poll(immediately);
         return consumer;
     }
 
     private String formatExpectedValue(String orderId) {
-        return String.format(
-                "{" +
-                        "  \"order\":{" +
-                        "    \"orderId\":\"%s\"," +
-                        "    \"randomValue\":\"%s\"" +
-                        "  }," +
-                        "  \"traceId\":\"${json-unit.ignore}\"" +
-                        "}",
-                orderId, randomValue
+        return String.format("{\"order\":{\"orderId\":\"%s\"," +
+                "\"randomValue\":\"%s\"},\"traceId\":\"%s\"}",
+                orderId, randomValue, "${json-unit.ignore}"
         );
     }
-
 
     private void createTopics() {
         AdminClient adminClient = AdminClient.create(getProperties());
@@ -163,7 +163,8 @@ public class ConverterShould {
         newTopics.add(xmlTopic);
         newTopics.add(jsonTopic);
 
-        CreateTopicsResult createTopicsResult = adminClient.createTopics(newTopics, new CreateTopicsOptions().timeoutMs(10000));
+        CreateTopicsResult createTopicsResult = adminClient.createTopics(newTopics,
+                new CreateTopicsOptions().timeoutMs(10000));
         Map<String, KafkaFuture<Void>> futureResults = createTopicsResult.values();
         futureResults.values().forEach(f -> {
             try {
@@ -179,12 +180,12 @@ public class ConverterShould {
         adminClient.close();
     }
 
-    private String createMessage(String orderId) {
+    private String createXmlMessage() {
         return String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>" +
                         "<order>" +
-                        "<orderId>%s</orderId>\n" +
-                        "<randomValue>%s</randomValue> +" +
+                        "<orderId>%s</orderId>" +
+                        "<randomValue>%s</randomValue>" +
                         "</order>", orderId, randomValue
         );
     }
@@ -192,15 +193,20 @@ public class ConverterShould {
     private String createModifyVoiceMessage(String orderId) {
         return String.format(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                        "                <transaction receivedDate=\"2018-11-15T10:29:07\" operatorId=\"sky\" operatorTransactionId=\"op_trans_id_095025_228\" operatorIssuedDate=\"2011-06-01T09:51:12\">\n" +
+                        "                <transaction receivedDate=\"2018-11-15T10:29:07\" operatorId=\"sky\" " +
+                        "operatorTransactionId=\"op_trans_id_095025_228\" " +
+                        "operatorIssuedDate=\"2011-06-01T09:51:12\">\n" +
                         "                  <instruction version=\"1\" type=\"PlaceOrder\">\n" +
                         "                    <order>\n" +
                         "                      <type>modify</type>\n" +
-                        "                      <operatorOrderId>SogeaVoipModify_${opereratorOrderId}</operatorOrderId>\n" +
+                        "                      <operatorOrderId>SogeaVoipModify_${opereratorOrderId}</operatorOrderId" +
+                        ">\n" +
                         "                      <operatorNotes>Test: notes</operatorNotes>\n" +
                         "                      <orderId>%1$s</orderId>\n" +
                         "                    </order>\n" +
-                        "                    <modifyFeaturesInstruction serviceId=\"31642339\" operatorOrderId=\"SogeaVoipModify_${opereratorOrderId}\" operatorNotes=\"Test: addThenRemoveStaticIpToAnFttcService\">\n" +
+                        "                    <modifyFeaturesInstruction serviceId=\"31642339\" " +
+                        "operatorOrderId=\"SogeaVoipModify_${opereratorOrderId}\" operatorNotes=\"Test: " +
+                        "addThenRemoveStaticIpToAnFttcService\">\n" +
                         "                      <features>\n" +
                         "                          <feature code=\"CallerDisplay\"/>\n" +
                         "                          <feature code=\"RingBack\"/>\n" +
@@ -211,7 +217,6 @@ public class ConverterShould {
                         "                </transaction>",
                 orderId);
     }
-
 
     private Properties getProperties() {
         String bootstrapServers = KAFKA_CONTAINER.getBootstrapServers();

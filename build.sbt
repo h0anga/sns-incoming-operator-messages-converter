@@ -27,6 +27,8 @@ libraryDependencies += "com.dimafeng" %% "testcontainers-scala" % "0.24.0" % "te
 libraryDependencies += "org.testcontainers" % "kafka" % "1.11.1" % Test
 libraryDependencies += "org.testcontainers" % "junit-jupiter" % "1.11.1" % Test
 libraryDependencies += "net.javacrumbs.json-unit" % "json-unit" % "2.6.1" % Test
+libraryDependencies += "org.apache.commons" % "commons-text" % "1.6"
+
 
 enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
