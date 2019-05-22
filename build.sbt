@@ -5,6 +5,7 @@ version := "0.1.1"
 scalaVersion := "2.12.8"
 
 resolvers += "mvnrepository" at "http://central.maven.org/maven2/"
+resolvers += "maven central" at "https://repo.maven.apache.org/maven2/"
 resolvers += "Maven Repository" at "https://mvnrepository.com/artifact/"
 resolvers += "Confluent Maven Repository" at "http://packages.confluent.io/maven/"
 
@@ -28,6 +29,11 @@ libraryDependencies += "org.testcontainers" % "kafka" % "1.11.1" % Test
 libraryDependencies += "org.testcontainers" % "junit-jupiter" % "1.11.1" % Test
 libraryDependencies += "net.javacrumbs.json-unit" % "json-unit" % "2.6.1" % Test
 libraryDependencies += "org.apache.commons" % "commons-text" % "1.6"
+libraryDependencies += "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5" % Test
+libraryDependencies += "org.xmlunit" % "xmlunit-core" % "2.6.2" % Test
+libraryDependencies += "org.xmlunit" % "xmlunit-assertj" % "2.6.2" % Test
+
+libraryDependencies += "org.assertj" % "assertj-core" % "3.11.1" % Test
 
 
 enablePlugins(JavaAppPackaging)

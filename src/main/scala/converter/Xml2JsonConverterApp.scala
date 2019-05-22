@@ -50,6 +50,9 @@ object Xml2JsonConverterApp extends App {
   def createConverter(): Converter = {
     if (convertionMode.equals("mqConnectorJsonContainingXml"))
       return MqJsonContainingXmlToJsonConverter
+    if (convertionMode.equals("jsonToXml"))
+      return JsonToXmlConverter
+
     return XmlToJsonConverter
   }
 

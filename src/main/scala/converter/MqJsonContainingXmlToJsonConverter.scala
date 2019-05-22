@@ -8,13 +8,7 @@ import org.json4s.JsonAST.{JObject, JString}
 import org.json4s.Xml.toJson
 import org.json4s.native.JsonMethods._
 
-import scala.xml.Elem
-
 object MqJsonContainingXmlToJsonConverter extends Converter {
-//  def fromXml(xmlString: String): Elem = {
-//    scala.xml.XML.loadString(xmlString)
-//  }
-
 
   def xmlToJson(instruction: String): String = {
     println(s"Input message: $instruction")
