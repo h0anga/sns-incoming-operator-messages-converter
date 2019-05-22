@@ -2,7 +2,7 @@
 //
 //import java.util.Properties
 //
-//import converter.Xml2JsonConverter._
+//import converter.MqJsonContainingXmlToJsonConverter._
 //import org.apache.kafka.clients.consumer.ConsumerRecord
 //import org.apache.kafka.clients.producer.ProducerRecord
 //import org.apache.kafka.common.serialization.{Serde, Serdes}

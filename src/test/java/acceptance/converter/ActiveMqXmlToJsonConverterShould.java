@@ -5,42 +5,31 @@ import org.apache.kafka.clients.admin.CreateTopicsOptions;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaFuture;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class ActiveMqXmlToJsonConverterShould extends ConverterBase {
-    private static final String ENV_KEY_KAFKA_BROKER_SERVER = "KAFKA_BROKER_SERVER";
-    private static final String ENV_KEY_KAFKA_BROKER_PORT = "KAFKA_BROKER_PORT";
 
-    private static final String XML_TOPIC = "INCOMING_OP_MSGS";
-    private static final String JSON_TOPIC = "modify.op.msgs";
 
     private String randomValue = generateRandomString();
-    private String orderId = generateRandomString();
     private String traceyId = generateRandomString();
 
     @Override
     protected Map<String, String> calculateEnvProperties() {
         Map<String, String> envProperties = new HashMap<>();
+        envProperties.put(ENV_KEY_MODE, "mqConnectorJsonContainingXml");
         envProperties.put(ENV_KEY_KAFKA_BROKER_SERVER, KAFKA_CONTAINER.getNetworkAliases().get(0));
         envProperties.put(ENV_KEY_KAFKA_BROKER_PORT, "" + 9092);
         return envProperties;
@@ -77,47 +66,11 @@ public class ActiveMqXmlToJsonConverterShould extends ConverterBase {
                 + "}", orderId, traceyId, createXmlMessage());
     }
 
-    private void assertKafkaMessageEquals() {
-        ConsumerRecords<String, String> recs = pollForResults();
-        assertFalse(recs.isEmpty());
-
-        Spliterator<ConsumerRecord<String, String>> spliterator = Spliterators.spliteratorUnknownSize(recs.iterator()
-                , 0);
-        Stream<ConsumerRecord<String, String>> consumerRecordStream = StreamSupport.stream(spliterator, false);
-        Optional<ConsumerRecord<String, String>> expectedConsumerRecord =
-                consumerRecordStream.filter(cr -> foundExpectedRecord(cr.key()))
-                .findAny();
-        expectedConsumerRecord.ifPresent(cr -> assertRecordValueJson(cr));
-        if (!expectedConsumerRecord.isPresent())
-            fail("Did not find expected record");
-    }
-
-    private boolean foundExpectedRecord(String key) {
-        return orderId.equals(key);
-    }
-
-    private void assertRecordValueJson(ConsumerRecord<String, String> consumerRecord) {
+    @Override
+    protected void assertRecordValueJson(ConsumerRecord<String, String> consumerRecord) {
         String value = consumerRecord.value();
         String expectedValue = formatExpectedValue(orderId);
         assertJsonEquals(expectedValue, value);
-    }
-
-    @NotNull
-    private String generateRandomString() {
-        return String.valueOf(new Random().nextLong());
-    }
-
-    private ConsumerRecords<String, String> pollForResults() {
-        KafkaConsumer<String, String> consumer = createKafkaConsumer(getKafkaProperties());
-        Duration duration = Duration.ofSeconds(3);
-        return consumer.poll(duration);
-    }
-
-    @NotNull
-    private KafkaConsumer<String, String> createKafkaConsumer(Properties props) {
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Collections.singletonList(JSON_TOPIC));
-        return consumer;
     }
 
     private String formatExpectedValue(String orderId) {

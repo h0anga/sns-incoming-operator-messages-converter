@@ -5,7 +5,6 @@ import java.util.Properties
 import brave.Tracing
 import brave.kafka.streams.KafkaStreamsTracing
 import brave.sampler.Sampler
-import converter.Xml2JsonConverter.xmlToJson
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.{Serde, Serdes}
@@ -16,7 +15,7 @@ import zipkin2.reporter.AsyncReporter
 import zipkin2.reporter.kafka11.KafkaSender
 
 
-class KafkaSetup(private val server: String, private val port: String) {
+class KafkaSetup(private val converter: Converter, private val server: String, private val port: String) {
 
   private implicit val stringSerde: Serde[String] = Serdes.String()
 
@@ -71,7 +70,7 @@ class KafkaSetup(private val server: String, private val port: String) {
       value.isEmpty
     }
 
-    val xmlToJsonMapper: ValueMapper[String,String] = xmlToJson(_)
+    val xmlToJsonMapper: ValueMapper[String,String] = converter.xmlToJson(_)
 
     val inputStream: KStream[String, String] = builder.stream(inputTopicName, Consumed.`with`(stringSerde, stringSerde))
     val jsonStream: KStream[String, String] = //inputStream.filter(xmlPredicate)

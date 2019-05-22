@@ -54,10 +54,15 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
     """.stripMargin
 
   private def createTopologyToTest = {
-    val kafkaSetup = new KafkaSetup(serverName, portNumber)
+    val kafkaSetup = new KafkaSetup(createConverter(), serverName, portNumber)
     val topology = kafkaSetup.build(inputTopic, outputTopic)
     topology
   }
+
+  private def createConverter(): Converter = {
+    MqJsonContainingXmlToJsonConverter
+  }
+
 
   it should "test a stream" in {
     val topology = createTopologyToTest

@@ -10,16 +10,11 @@ import org.json4s.native.JsonMethods._
 
 import scala.xml.Elem
 
-object Xml2JsonConverter {
-  def fromXml(xmlString: String): Elem = {
-    scala.xml.XML.loadString(xmlString)
-  }
+object MqJsonContainingXmlToJsonConverter extends Converter {
+//  def fromXml(xmlString: String): Elem = {
+//    scala.xml.XML.loadString(xmlString)
+//  }
 
-
-  def stripSurroundingQuotes(xmlString: String): String = {
-    val unescaped = StringEscapeUtils.unescapeJson(xmlString)
-    unescaped.substring(unescaped.indexOf("?>") + 2, unescaped.length - 1)
-  }
 
   def xmlToJson(instruction: String): String = {
     println(s"Input message: $instruction")
@@ -36,16 +31,23 @@ object Xml2JsonConverter {
     val tracedJson = json merge JObject("traceId" -> JString(traceId))
 
     val result = pretty(render(tracedJson))
-    println(s"""result: $result""")
+    println(
+      s"""MqJsonContainingXmlToJsonConverter
+         |result: $result""".stripMargin)
     result
   }
 
-  def readXmlFieldFromJson(instruction: String): String = {
+  private def readXmlFieldFromJson(instruction: String): String = {
     implicit val formats = DefaultFormats
     val json = parse(instruction)
 
     val xmlNode = compact(render(json\\"XML"))
     println(s"""xmlNode: $xmlNode""")
     xmlNode
+  }
+
+  private def stripSurroundingQuotes(xmlString: String): String = {
+    val unescaped = StringEscapeUtils.unescapeJson(xmlString)
+    unescaped.substring(unescaped.indexOf("?>") + 2, unescaped.length - 1)
   }
 }

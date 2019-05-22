@@ -9,6 +9,8 @@ object Xml2JsonConverterApp extends App {
   private val incomingOperatorMessagesTopic: String = Properties.envOrElse("INPUT_KAFKA_TOPIC", getInputTopicName)
   private val modifyOperatorMessagesTopic: String = Properties.envOrElse("OUTPUT_KAFKA_TOPIC", getOutputTopicName)
 
+  private val convertionMode: String = Properties.envOrElse("MODE", "xml")
+
   private val appName: String = Properties.envOrElse("APP_NAME", getAppName)
 
   private def getAppName = {
@@ -38,13 +40,20 @@ object Xml2JsonConverterApp extends App {
     OUTPUT_KAFKA_TOPIC
   }
 
+  println(s"MODE: $convertionMode")
   println(s"SERVER: $kafkabroker")
   println(s"PORT: $kafkabrokerPort")
   println(s"IN: $incomingOperatorMessagesTopic")
   println(s"OUT: $modifyOperatorMessagesTopic")
 
 
-  val kafkaSetup = new KafkaSetup(kafkabroker, kafkabrokerPort)
+  def createConverter(): Converter = {
+    if (convertionMode.equals("mqConnectorJsonContainingXml"))
+      return MqJsonContainingXmlToJsonConverter
+    return XmlToJsonConverter
+  }
+
+  val kafkaSetup = new KafkaSetup(createConverter(), kafkabroker, kafkabrokerPort)
   kafkaSetup.start(appName, incomingOperatorMessagesTopic, modifyOperatorMessagesTopic)
 
   sys.ShutdownHookThread {
