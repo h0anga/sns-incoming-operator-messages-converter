@@ -28,7 +28,7 @@ public abstract class ConverterBase {
     protected static final String ENV_KEY_MODE = "MODE";
     protected static final String ENV_KEY_KAFKA_BROKER_SERVER = "KAFKA_BROKER_SERVER";
     protected static final String ENV_KEY_KAFKA_BROKER_PORT = "KAFKA_BROKER_PORT";
-    protected static final String XML_TOPIC = "INCOMING_OP_MSGS";
+    protected static final String INPUT_TOPIC = "INCOMING_OP_MSGS";
     protected static final String JSON_TOPIC = "modify.op.msgs";
 
     private static final String KAFKA_DESERIALIZER = "org.apache.kafka.common.serialization.StringDeserializer";
@@ -44,7 +44,13 @@ public abstract class ConverterBase {
             .withNetwork(KAFKA_CONTAINER.getNetwork())
             .withEnv(calculateEnvProperties());
 
-    protected abstract Map<String, String> calculateEnvProperties();
+    private Map<String, String> calculateEnvProperties() {
+        Map<String, String> envProperties = new HashMap<>();
+        envProperties.put(ENV_KEY_MODE, getMode());
+        envProperties.put(ENV_KEY_KAFKA_BROKER_SERVER, KAFKA_CONTAINER.getNetworkAliases().get(0));
+        envProperties.put(ENV_KEY_KAFKA_BROKER_PORT, "" + 9092);
+        return envProperties;
+    }
 
     protected Properties getKafkaProperties() {
         String bootstrapServers = KAFKA_CONTAINER.getBootstrapServers();
@@ -73,7 +79,11 @@ public abstract class ConverterBase {
         new KafkaProducer<String, String>(getKafkaProperties()).send(createKafkaProducerRecord()).get();
     }
 
-    protected abstract ProducerRecord createKafkaProducerRecord();
+    protected abstract String getMode();
+
+    protected ProducerRecord createKafkaProducerRecord() {
+        return new ProducerRecord(INPUT_TOPIC, orderId, createInputMessage());
+    }
 
     protected String generateRandomString() {
         return String.valueOf(new Random().nextLong());
@@ -111,4 +121,6 @@ public abstract class ConverterBase {
         consumer.subscribe(Collections.singletonList(ActiveMqXmlToJsonConverterShould.JSON_TOPIC));
         return consumer;
     }
+
+    protected abstract String createInputMessage();
 }

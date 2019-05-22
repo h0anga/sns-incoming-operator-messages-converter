@@ -11,7 +11,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -27,12 +26,8 @@ public class ActiveMqXmlToJsonConverterShould extends ConverterBase {
     private String traceyId = generateRandomString();
 
     @Override
-    protected Map<String, String> calculateEnvProperties() {
-        Map<String, String> envProperties = new HashMap<>();
-        envProperties.put(ENV_KEY_MODE, "mqConnectorJsonContainingXml");
-        envProperties.put(ENV_KEY_KAFKA_BROKER_SERVER, KAFKA_CONTAINER.getNetworkAliases().get(0));
-        envProperties.put(ENV_KEY_KAFKA_BROKER_PORT, "" + 9092);
-        return envProperties;
+    protected String getMode() {
+        return "mqConnectorJsonContainingXml";
     }
 
     @AfterEach
@@ -46,19 +41,12 @@ public class ActiveMqXmlToJsonConverterShould extends ConverterBase {
 
 //        createTopics();
 
-        //when
         writeMessageToInputTopic();
 
-        //then
         assertKafkaMessageEquals();
     }
 
-    @Override
-    protected ProducerRecord createKafkaProducerRecord() {
-        return new ProducerRecord(XML_TOPIC, orderId, createJsonMessage());
-    }
-
-    private String createJsonMessage() {
+    protected String createInputMessage() {
         return String.format("{"
                 + "\"ORDER_ID\":\"%s\","
                 + "\"TRACEY_ID\":\"%s\","
@@ -82,7 +70,7 @@ public class ActiveMqXmlToJsonConverterShould extends ConverterBase {
 
     private void createTopics() {
         AdminClient adminClient = AdminClient.create(getKafkaProperties());
-        NewTopic xmlTopic = new NewTopic(XML_TOPIC, 1, (short) 1);
+        NewTopic xmlTopic = new NewTopic(INPUT_TOPIC, 1, (short) 1);
         NewTopic jsonTopic = new NewTopic(JSON_TOPIC, 1, (short) 1);
 
         List<NewTopic> newTopics = new ArrayList<>();

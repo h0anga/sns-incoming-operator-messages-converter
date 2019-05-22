@@ -5,8 +5,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
@@ -16,17 +14,8 @@ public class XmlToJsonConverterShould extends ConverterBase {
     private String randomValue = generateRandomString();
 
     @Override
-    protected Map<String, String> calculateEnvProperties() {
-        Map<String, String> envProperties = new HashMap<>();
-        envProperties.put(ENV_KEY_MODE, "xml");
-        envProperties.put(ENV_KEY_KAFKA_BROKER_SERVER, KAFKA_CONTAINER.getNetworkAliases().get(0));
-        envProperties.put(ENV_KEY_KAFKA_BROKER_PORT, "" + 9092);
-        return envProperties;
-    }
-
-    @Override
-    protected ProducerRecord createKafkaProducerRecord() {
-        return new ProducerRecord(XML_TOPIC, orderId, createXmlMessage());
+    protected String getMode() {
+        return "xml";
     }
 
     @Override
@@ -36,7 +25,8 @@ public class XmlToJsonConverterShould extends ConverterBase {
         assertJsonEquals(expectedValue, value);
     }
 
-    private String createXmlMessage() {
+    @Override
+    protected String createInputMessage() {
         return String.format(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                         "<order>" +
