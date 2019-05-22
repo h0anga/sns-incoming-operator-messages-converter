@@ -4,22 +4,15 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsOptions;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaFuture;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.util.*;
@@ -34,40 +27,23 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-@Testcontainers
-public class ConverterShould {
+public class ActiveMqXmlToJsonConverterShould extends ConverterBase {
     private static final String ENV_KEY_KAFKA_BROKER_SERVER = "KAFKA_BROKER_SERVER";
     private static final String ENV_KEY_KAFKA_BROKER_PORT = "KAFKA_BROKER_PORT";
 
     private static final String XML_TOPIC = "INCOMING_OP_MSGS";
     private static final String JSON_TOPIC = "modify.op.msgs";
 
-    @Container
-    private static final KafkaContainer KAFKA_CONTAINER = new KafkaContainer("5.2.1").withEmbeddedZookeeper();
-
-    @Container
-    private GenericContainer converterContainer = new GenericContainer("sns-incoming-operator-messages-converter:0.1.1")
-            .withNetwork(KAFKA_CONTAINER.getNetwork())
-            .withEnv(calculateEnvProperties());
-
-    private static final String KAFKA_DESERIALIZER = "org.apache.kafka.common.serialization.StringDeserializer";
-    private static final String KAFKA_SERIALIZER = "org.apache.kafka.common.serialization.StringSerializer";
-
     private String randomValue = generateRandomString();
     private String orderId = generateRandomString();
     private String traceyId = generateRandomString();
 
-    private Map<String, String> calculateEnvProperties() {
+    @Override
+    protected Map<String, String> calculateEnvProperties() {
         Map<String, String> envProperties = new HashMap<>();
         envProperties.put(ENV_KEY_KAFKA_BROKER_SERVER, KAFKA_CONTAINER.getNetworkAliases().get(0));
         envProperties.put(ENV_KEY_KAFKA_BROKER_PORT, "" + 9092);
         return envProperties;
-    }
-
-    @BeforeEach
-    public void setup() {
-        assertTrue(KAFKA_CONTAINER.isRunning());
-        assertTrue(converterContainer.isRunning());
     }
 
     @AfterEach
@@ -82,17 +58,14 @@ public class ConverterShould {
 //        createTopics();
 
         //when
-        writeXmlToInputTopic();
+        writeMessageToInputTopic();
 
         //then
         assertKafkaMessageEquals();
     }
 
-    private void writeXmlToInputTopic() throws InterruptedException, ExecutionException {
-        new KafkaProducer<String, String>(getProperties()).send(createKafkaProducerRecord()).get();
-    }
-
-    private ProducerRecord createKafkaProducerRecord() {
+    @Override
+    protected ProducerRecord createKafkaProducerRecord() {
         return new ProducerRecord(XML_TOPIC, orderId, createJsonMessage());
     }
 
@@ -135,7 +108,7 @@ public class ConverterShould {
     }
 
     private ConsumerRecords<String, String> pollForResults() {
-        KafkaConsumer<String, String> consumer = createKafkaConsumer(getProperties());
+        KafkaConsumer<String, String> consumer = createKafkaConsumer(getKafkaProperties());
         Duration duration = Duration.ofSeconds(3);
         return consumer.poll(duration);
     }
@@ -155,7 +128,7 @@ public class ConverterShould {
     }
 
     private void createTopics() {
-        AdminClient adminClient = AdminClient.create(getProperties());
+        AdminClient adminClient = AdminClient.create(getKafkaProperties());
         NewTopic xmlTopic = new NewTopic(XML_TOPIC, 1, (short) 1);
         NewTopic jsonTopic = new NewTopic(JSON_TOPIC, 1, (short) 1);
 
@@ -218,21 +191,4 @@ public class ConverterShould {
                 orderId);
     }
 
-    private Properties getProperties() {
-        String bootstrapServers = KAFKA_CONTAINER.getBootstrapServers();
-        //        String bootstrapServers = KAFKA_CONTAINER.getNetworkAliases().get(0) + ":9092";
-
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put("acks", "all");
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KAFKA_SERIALIZER);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KAFKA_SERIALIZER);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KAFKA_DESERIALIZER);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, KAFKA_DESERIALIZER);
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, this.getClass().getName());
-        return props;
-    }
 }
