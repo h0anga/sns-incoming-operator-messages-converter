@@ -73,4 +73,5 @@ sbt "run --app-name knitware-error-mxl-json-converter --input-topic KNITWARE_ERR
  gu install native-image
  native-image -jar ./target/scala-2.12/xmlJsonConverter.jar linuxXmlToJsonConverter
  
+ docker run -it sns/xml-json-converter linuxXmlToJsonConverter
  
