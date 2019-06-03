@@ -15,4 +15,4 @@ RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/s
 
 RUN apk del wget
 
-COPY linuxXmlToJsonConverter /
+COPY build/linuxXmlToJsonConverter /

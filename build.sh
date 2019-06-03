@@ -20,13 +20,13 @@ do
         if [[ "${TARGET}" == "darwin" ]]
         then
           echo >&2 "Building native Image for Mac..."
-          native-image -jar ./target/scala-2.12/xmlJsonConverter.jar macXmlToJsonConverter
+          native-image -jar ./target/scala-2.12/xmlJsonConverter.jar build/macXmlToJsonConverter
           echo >&2 "Built native-image for: " $TARGET
         elif [[ "${TARGET}" == "docker" ]]
         then
           echo >&2 "Building native Image for linux on Docker..."
           docker build -f ./NativeImageDockerfile -t sns/graal-native-image-builder .
-          docker run --rm -v $PWD:/project sns/graal-native-image-builder:latest native-image -jar /project/target/scala-2.12/xmlJsonConverter.jar /project/linuxXmlToJsonConverter
+          docker run --rm -v $PWD:/project sns/graal-native-image-builder:latest native-image -jar /project/target/scala-2.12/xmlJsonConverter.jar /project/build/linuxXmlToJsonConverter
           echo >&2 "Built native-image for: " $TARGET
         fi
         ;;
