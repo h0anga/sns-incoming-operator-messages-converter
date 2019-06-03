@@ -20,11 +20,10 @@ object Xml2JsonConverterApp {
 
   }
 
+  val kafkaSetup = new KafkaSetup(kafkabroker, kafkabrokerPort)
+  kafkaSetup.start(appName, incomingOperatorMessagesTopic, modifyOperatorMessagesTopic)
 
-  //  val kafkaSetup = new KafkaSetup(kafkabroker, kafkabrokerPort)
-  //  kafkaSetup.start(appName, incomingOperatorMessagesTopic, modifyOperatorMessagesTopic)
-  //
-  //  sys.ShutdownHookThread {
-  //    kafkaSetup.shutDown()
-  //  }
+  sys.ShutdownHookThread {
+    kafkaSetup.shutDown()
+  }
 }
