@@ -55,3 +55,22 @@ sbt "run --app-name knitware-error-mxl-json-converter --input-topic KNITWARE_ERR
  
  Read logs of container when its spun up during test:
  docker ps | grep "sns-incoming-operator-messages-converter" | awk {'print $1'} | xargs docker logs
+ 
+ 
+ ---
+ ## Graal VM
+ 
+ 1) Build a Fat Jar:
+ sbt assembly
+ 
+ For a Mac Native Image:
+ 2a) native-image -jar ./target/scala-2.12/xmlJsonConverter.jar macXmlToJsonConverter
+ 
+ For a Linux (Docker!) Image:
+ docker build -f ./AlpineNativeImageDockerfile -t graalvm/alpine .
+ 
+ 2b) docker run -it -v /Users/andy/Code:/andy oracle/graalvm-ce:19.0.0 bash
+ gu install native-image
+ native-image -jar ./target/scala-2.12/xmlJsonConverter.jar linuxXmlToJsonConverter
+ 
+ 
