@@ -33,6 +33,8 @@ libraryDependencies += "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.
 libraryDependencies += "org.xmlunit" % "xmlunit-core" % "2.6.2" % Test
 libraryDependencies += "org.xmlunit" % "xmlunit-assertj" % "2.6.2" % Test
 
+dependencyOverrides +="org.assertj" % "assertj-core" % "3.11.1"
+
 enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 enablePlugins(AshScriptPlugin)
