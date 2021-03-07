@@ -32,22 +32,14 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
   private val expectedJson =
     s"""{
        |  "transaction":{
-       |    "operatorIssuedDate":"2011-06-01T09:51:12",
-       |    "operatorTransactionId":"op_trans_id_095025_228",
        |    "operatorId":"sky",
        |    "receivedDate":"2018-11-15T10:29:07",
        |    "instruction":{
-       |      "type":"PlaceOrder",
-       |      "version":"1",
        |      "order":{
-       |        "type":"modify",
-       |        "operatorOrderId":"SogeaVoipModify_YHUORO",
        |        "operatorNotes":"Test: notes",
        |        "orderId":"$orderId"
        |      },
        |      "modifyFeaturesInstruction":{
-       |        "operatorNotes":"Test: addThenRemoveStaticIpToAnFttcService",
-       |        "operatorOrderId":"SogeaVoipModify_YHUORO",
        |        "serviceId":"31642339",
        |        "features":{
        |          "feature":[{
@@ -63,15 +55,13 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
 
   private val kafkaMessageInValue =
     s"""|<?xml version="1.0" encoding="UTF-8"?>
-       |<transaction receivedDate="2018-11-15T10:29:07" operatorId="sky" operatorTransactionId="op_trans_id_095025_228" operatorIssuedDate="2011-06-01T09:51:12">
-       |  <instruction version="1" type="PlaceOrder">
+       |<transaction receivedDate="2018-11-15T10:29:07" operatorId="sky">
+       |  <instruction>
        |    <order>
-       |      <type>modify</type>
-       |      <operatorOrderId>SogeaVoipModify_YHUORO</operatorOrderId>
        |      <operatorNotes>Test: notes</operatorNotes>
        |      <orderId>$orderId</orderId>
        |    </order>
-       |    <modifyFeaturesInstruction serviceId="31642339" operatorOrderId="SogeaVoipModify_YHUORO" operatorNotes="Test: addThenRemoveStaticIpToAnFttcService">
+       |    <modifyFeaturesInstruction serviceId="31642339">
        |      <features>
        |          <feature code="CallerDisplay"/>
        |          <feature code="RingBack"/>
