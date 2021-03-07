@@ -1,12 +1,12 @@
 package converter
 
 import java.util.{Properties, UUID}
-
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.test.ConsumerRecordFactory
 import org.apache.kafka.streams.{StreamsConfig, TopologyTestDriver}
+import org.json4s
 import org.scalatest._
 
 class KafkaSetupSpec extends FlatSpec with Matchers {
@@ -30,17 +30,46 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
   private val orderId = UUID.randomUUID().toString
 
   private val expectedJson =
-    """{"modifyVoiceFeaturesInstruction":{"operatorId":"sky","orderId":"33269793","serviceId":"31642339","operatorOrderId":"SogeaVoipModify_YHUORO","features":["CallerDisplay","RingBack","ChooseToRefuse"]}}"""
+    s"""{
+       |  "transaction":{
+       |    "operatorIssuedDate":"2011-06-01T09:51:12",
+       |    "operatorTransactionId":"op_trans_id_095025_228",
+       |    "operatorId":"sky",
+       |    "receivedDate":"2018-11-15T10:29:07",
+       |    "instruction":{
+       |      "type":"PlaceOrder",
+       |      "version":"1",
+       |      "order":{
+       |        "type":"modify",
+       |        "operatorOrderId":"SogeaVoipModify_YHUORO",
+       |        "operatorNotes":"Test: notes",
+       |        "orderId":"$orderId"
+       |      },
+       |      "modifyFeaturesInstruction":{
+       |        "operatorNotes":"Test: addThenRemoveStaticIpToAnFttcService",
+       |        "operatorOrderId":"SogeaVoipModify_YHUORO",
+       |        "serviceId":"31642339",
+       |        "features":{
+       |          "feature":[{
+       |            "code":"CallerDisplay"
+       |          },{
+       |            "code":"RingBack"
+       |          },{
+       |            "code":"ChooseToRefuse"
+       |          }]
+       |        }
+       |      }
+       |    }""".stripMargin
 
   private val kafkaMessageInValue =
-    """|<?xml version="1.0" encoding="UTF-8"?>
+    s"""|<?xml version="1.0" encoding="UTF-8"?>
        |<transaction receivedDate="2018-11-15T10:29:07" operatorId="sky" operatorTransactionId="op_trans_id_095025_228" operatorIssuedDate="2011-06-01T09:51:12">
        |  <instruction version="1" type="PlaceOrder">
        |    <order>
        |      <type>modify</type>
        |      <operatorOrderId>SogeaVoipModify_YHUORO</operatorOrderId>
        |      <operatorNotes>Test: notes</operatorNotes>
-       |      <orderId>33269793</orderId>
+       |      <orderId>$orderId</orderId>
        |    </order>
        |    <modifyFeaturesInstruction serviceId="31642339" operatorOrderId="SogeaVoipModify_YHUORO" operatorNotes="Test: addThenRemoveStaticIpToAnFttcService">
        |      <features>
@@ -73,7 +102,7 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
     val outputKafkaRecord: ProducerRecord[String, String] = topologyTestDriver.readOutput(outputTopic, keySerde.deserializer(), valueSerde.deserializer())
     val outputValue = outputKafkaRecord.value()
 
-    outputValue shouldEqual expectedJson
+    outputValue should include (expectedJson)
   }
 
 }
