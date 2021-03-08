@@ -21,6 +21,6 @@ object Xml2JsonConverter {
     val xml = scala.xml.XML.loadString(instruction)
     val json: json4s.JValue = toJson(xml)
     val tracedJson = json merge JObject("traceId" -> JString(traceId))
-    pretty(render(tracedJson))
+    compact(render(tracedJson))
   }
 }

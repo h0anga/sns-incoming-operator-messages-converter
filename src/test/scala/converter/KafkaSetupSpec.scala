@@ -6,7 +6,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.test.ConsumerRecordFactory
 import org.apache.kafka.streams.{StreamsConfig, TopologyTestDriver}
-import org.json4s
 import org.scalatest._
 
 class KafkaSetupSpec extends FlatSpec with Matchers {
@@ -30,33 +29,11 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
   private val orderId = UUID.randomUUID().toString
 
   private val expectedJson =
-    s"""{
-       |  "transaction":{
-       |    "operatorId":"sky",
-       |    "receivedDate":"2018-11-15T10:29:07",
-       |    "instruction":{
-       |      "order":{
-       |        "operatorNotes":"Test: notes",
-       |        "orderId":"$orderId"
-       |      },
-       |      "modifyFeaturesInstruction":{
-       |        "serviceId":"31642339",
-       |        "features":{
-       |          "feature":[{
-       |            "code":"CallerDisplay"
-       |          },{
-       |            "code":"RingBack"
-       |          },{
-       |            "code":"ChooseToRefuse"
-       |          }]
-       |        }
-       |      }
-       |    }""".stripMargin
+    s"""{"instruction":{"operatorId":"sky","receivedDate":"2018-11-15T10:29:07","order":{"operatorNotes":"Test: notes","orderId":"$orderId"},"modifyFeaturesInstruction":{"serviceId":"31642339","features":{"feature":[{"code":"CallerDisplay"},{"code":"RingBack"},{"code":"ChooseToRefuse"}]}}},"traceId":"""
 
   private val kafkaMessageInValue =
     s"""|<?xml version="1.0" encoding="UTF-8"?>
-       |<transaction receivedDate="2018-11-15T10:29:07" operatorId="sky">
-       |  <instruction>
+       |<instruction receivedDate="2018-11-15T10:29:07" operatorId="sky">
        |    <order>
        |      <operatorNotes>Test: notes</operatorNotes>
        |      <orderId>$orderId</orderId>
@@ -68,8 +45,7 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
        |          <feature code="ChooseToRefuse"/>
        |      </features>
        |    </modifyFeaturesInstruction>
-       |  </instruction>
-       |</transaction>
+       |</instruction>
     """.stripMargin
 
   private def createTopologyToTest = {
@@ -92,7 +68,7 @@ class KafkaSetupSpec extends FlatSpec with Matchers {
     val outputKafkaRecord: ProducerRecord[String, String] = topologyTestDriver.readOutput(outputTopic, keySerde.deserializer(), valueSerde.deserializer())
     val outputValue = outputKafkaRecord.value()
 
-    outputValue should include (expectedJson)
+    outputValue should startWith (expectedJson)
   }
 
 }
