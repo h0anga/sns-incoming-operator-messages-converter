@@ -13,7 +13,6 @@ import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig, To
 import zipkin2.reporter.AsyncReporter
 import zipkin2.reporter.kafka11.KafkaSender
 
-
 class KafkaSetup(private val server: String, private val port: String) {
 
   private implicit val stringSerde: Serde[String] = Serdes.String()
@@ -70,8 +69,6 @@ class KafkaSetup(private val server: String, private val port: String) {
     val jsonStream: KStream[String, String] = inputStream.filter(xmlPredicate)
       .transformValues(tracing.mapValues("xml_to_json", xmlToJsonMapper))
 
-//    val xmlStream: KStream[String, String] = inputStream.filter(xmlPredicate)
-//    val jsonStream: KStream[String, String] = xmlStream.mapValues(line => xmlToJson(line))
     jsonStream.filterNot(emptyStringPredicate)
       .to(outputTopicName)
 
